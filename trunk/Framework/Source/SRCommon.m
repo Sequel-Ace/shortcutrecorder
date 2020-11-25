@@ -175,26 +175,33 @@ NSString *SRCharacterForKeyCodeAndCocoaFlags(NSInteger keyCode, NSUInteger cocoa
 //    (__bridge id)CFMakeCollectable(locale) ; // Autorelease here so that it gets released no matter what
 	
 	TISInputSourceRef tisSource = TISCopyCurrentKeyboardInputSource();
-    if(!tisSource)
+    if(!tisSource){
+        if (locale) CFRelease(locale);
 		return FailWithNaiveString;
+    }
 	
 	CFDataRef layoutData = (CFDataRef)TISGetInputSourceProperty(tisSource, kTISPropertyUnicodeKeyLayoutData);
-    if (!layoutData)
+    if (!layoutData){
+        if (locale) CFRelease(locale);
 		return FailWithNaiveString;
-	
+    }
 	const UCKeyboardLayout *keyLayout = (const UCKeyboardLayout *)CFDataGetBytePtr(layoutData);
-    if (!keyLayout)
+    if (!keyLayout){
+        if (locale) CFRelease(locale);
 		return FailWithNaiveString;
-	
+    }
+
 	EventModifiers modifiers = 0;
 	if (cocoaFlags & NSEventModifierFlagOption)	modifiers |= optionKey;
 	if (cocoaFlags & NSEventModifierFlagShift)		modifiers |= shiftKey;
 	UniCharCount maxStringLength = 4, actualStringLength;
 	UniChar unicodeString[4];
 	err = UCKeyTranslate( keyLayout, (UInt16)keyCode, kUCKeyActionDisplay, modifiers, LMGetKbdType(), kUCKeyTranslateNoDeadKeysBit, &deadKeyState, maxStringLength, &actualStringLength, unicodeString );
-	if(err != noErr)
+    if(err != noErr){
+        if (locale) CFRelease(locale);
 		return FailWithNaiveString;
-
+    }
+    
 	CFStringRef temp = CFStringCreateWithCharacters(kCFAllocatorDefault, unicodeString, 1);
 	CFMutableStringRef mutableTemp = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, temp);
 
@@ -203,7 +210,8 @@ NSString *SRCharacterForKeyCodeAndCocoaFlags(NSInteger keyCode, NSUInteger cocoa
     NSString *resultString = [NSString stringWithString:(__bridge NSString *)mutableTemp];
 
 	if (temp) CFRelease(temp);
-	if (mutableTemp) CFRelease(mutableTemp);
+    if (mutableTemp) CFRelease(mutableTemp);
+    if (locale) CFRelease(locale);
 
 	PUDNSLog(@"character: -%@-", (NSString *)resultString);
 
