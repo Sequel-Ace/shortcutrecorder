@@ -75,7 +75,7 @@
 	if ( err != noErr ) return YES;
 
 	// Not copying the array like this results in a leak on according to the Leaks Instrument
-	NSArray *globalHotKeys = [NSArray arrayWithArray:(NSArray *)tempArray];
+    NSArray *globalHotKeys = [NSArray arrayWithArray:(__bridge NSArray *)tempArray];
 
 	if ( tempArray ) CFRelease(tempArray);
 	
@@ -95,7 +95,7 @@
 	while (( globalHotKeyInfoDictionary = [globalHotKeysEnumerator nextObject] ))
 	{
 		// Only check if global hotkey is enabled
-		if ( (CFBooleanRef)[globalHotKeyInfoDictionary objectForKey:(NSString *)kHISymbolicHotKeyEnabled] != kCFBooleanTrue )
+        if ( (__bridge CFBooleanRef)[globalHotKeyInfoDictionary objectForKey:(NSString *)kHISymbolicHotKeyEnabled] != kCFBooleanTrue )
             continue;
 		
         globalCommandMod    = NO;
@@ -187,10 +187,10 @@
 			
 			menuItemModifierFlags = [menuItem keyEquivalentModifierMask];
             
-			if ( menuItemModifierFlags & NSCommandKeyMask )     menuItemCommandMod = YES;
-			if ( menuItemModifierFlags & NSAlternateKeyMask )   menuItemOptionMod = YES;
-			if ( menuItemModifierFlags & NSShiftKeyMask )       menuItemShiftMod = YES;
-			if ( menuItemModifierFlags & NSControlKeyMask )     menuItemCtrlMod = YES;
+            if ( menuItemModifierFlags & NSEventModifierFlagCommand )     menuItemCommandMod = YES;
+            if ( menuItemModifierFlags & NSEventModifierFlagOption )   menuItemOptionMod = YES;
+            if ( menuItemModifierFlags & NSEventModifierFlagShift )       menuItemShiftMod = YES;
+            if ( menuItemModifierFlags & NSEventModifierFlagControl )     menuItemCtrlMod = YES;
 			
 			NSString *localKeyString = SRStringForKeyCode( keyCode );
 			
